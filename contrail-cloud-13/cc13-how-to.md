@@ -1,20 +1,26 @@
-**How to login to overcloud controller VM**
-- Tested on CC13.0.2 pre-release 341
+# How to login to overcloud controller VM
+**Tested on CC13.0.2 pre-release 341**
 
-# On jumphost, connect as contrail user
+## On jumphost, connect as contrail user
+```bash
 [root@r4-ru43 ~]# su contrail
 [contrail@r4-ru43 root]$
+```
 
-# SSH to undercloud VM
+## SSH to undercloud VM
+```bash
 [contrail@r4-ru43 root]$ ssh undercloud
 Last login: Tue Nov 20 06:17:00 2018 from 192.168.122.1
 [stack@undercloud ~]$
+```
 
-# Source the stackrc file
+## Source the stackrc file
+```bash
 [stack@undercloud ~]$ . stackrc
 (undercloud) [stack@undercloud ~]$
+```
 
-# Display the list of servers
+## Display the list of servers
 ```bash
 (undercloud) [stack@undercloud ~]$ openstack server list
 +--------------------------------------+---------------------+--------+---------------------+----------------+-----------------------------+
@@ -28,54 +34,69 @@ Last login: Tue Nov 20 06:17:00 2018 from 192.168.122.1
 +--------------------------------------+---------------------+--------+---------------------+----------------+-----------------------------+
 ```
 
-# SSH to control server address as heat-admin user
+## SSH to control server address as heat-admin user
+```bash
 (undercloud) [stack@undercloud ~]$ ssh heat-admin@192.0.2.56
 Warning: Permanently added '192.0.2.56' (ECDSA) to the list of known hosts.
 Last login: Tue Nov 20 06:23:08 2018 from 192.0.2.1
 [heat-admin@overcloudwfx-ctrl-0 ~]$
+```
 ---
 
-**How to login to overcloud controller host**
-- Tested on CC13.0.2
+# How to login to overcloud controller host
+**Tested on CC13.0.2**
 
-# On jumphost, connect as contrail user
+## On jumphost, connect as contrail user
+```bash
 [root@r4-ru43 ~]# su contrail
 [contrail@r4-ru43 root]$
+```
 
-# SSH to undercloud VM
+## SSH to undercloud VM
+```bash
 [contrail@r4-ru43 root]$ ssh undercloud
 Last login: Tue Nov 20 06:17:00 2018 from 192.168.122.1
 [stack@undercloud ~]$
+```
 
-# Grep for the controller host name (from control-host-nodes.yml config file) in /etc/hosts
+## Grep for the controller host name (from control-host-nodes.yml config file) in /etc/hosts
+```bash
 [stack@undercloud ~]$ grep r4u37-control /etc/hosts
 192.0.2.5 r4u37-control.dc150-left.juniper.net r4u37-control
+```
 
-# Return to the jumphost but remain as contrail user
+## Return to the jumphost but remain as contrail user
+```bash
 [stack@undercloud ~]$ exit
 logout
 Connection to 192.168.122.252 closed.
 [contrail@r4-ru43 root]$
+```
 
-# SSH to control server address (as contrail user)
+## SSH to control server address (as contrail user)
+```bash
 [contrail@r4-ru43 root]$ ssh 192.0.2.5
 Warning: Permanently added '192.0.2.5' (ECDSA) to the list of known hosts.
 Last login: Tue Feb 26 09:08:40 2019 from gateway
 [contrail@r4u37-control ~]$
+```
 ---
 
-**How to increase the MTU**
-- Tested on CC13.0.2 pre-release 341
+# How to increase the MTU
+**Tested on CC13.0.2 pre-release 341**
 
-# site.yml: Set desired MTU for all overcloud networks
+## site.yml: Set desired MTU for all overcloud networks
 Example:
+```yaml
 overcloud:
   network:
     tenant:
       mtu: 9100
+```
 
-# control-host-nodes.yml: Set desired MTU for all bridges and interfaces that will carry overcloud network traffic (i.e. the bond bridge and the bond physical interface members)
+## control-host-nodes.yml: Set desired MTU for all bridges and interfaces that will carry overcloud network traffic (i.e. the bond bridge and the bond physical interface members)
 Example:
+```yaml
 control_host_nodes_network_config:
   - type: ovs_bridge
     name: br-bond0
@@ -96,17 +117,21 @@ control_host_nodes_network_config:
              type: interface
              mtu: 9100
              name: em1
+```
 
-# overcloud-nics.yml: Set desired MTU on physical interfaces that carry overcloud networks
+## overcloud-nics.yml: Set desired MTU on physical interfaces that carry overcloud networks
 _contrail_network_config and controller_network_config - Set on eth interfaces_
 Example:
+```yaml
 - type: interface
   name: eth1
   use_dhcp: false
   mtu: 9100
+```
 
 _compute_network_config - Set on bond interfaces_
 Example:
+```yaml
 - type: linux_bond
   name: bond0
   use_dhcp: false
@@ -120,9 +145,11 @@ Example:
   - type: interface
     name: em1
     mtu: 9100
+```
 
 _compute_dpdk_network_config - Set on vhost bond and normal bond interfaces_
 Example:
+```yaml
 - type: contrail_vrouter_dpdk
   name: vhost0
   vlan_id:
@@ -139,31 +166,38 @@ Example:
   - type: interface
     name: em1
     mtu: 9100
+```
 
-# Redeploy the overcloud
+## Redeploy the overcloud
 If you are modifying MTU on an existing deployment, then you will likely need to remove the nodes and readd them for the MTU to take effect. In my lab, I ran -c on openstack-deploy.sh, control-vms-deploy.sh, and control-hosts-deploy.sh, and then redeployed in the reverse order. That might have been overkill but is how I did the change in my lab.
 
-# Notes
+## Notes
 - I tried deploying with just openstack-deploy.sh, but it didn't affect the MTUs. Need to redeploy the overcloud I assume.
 ---
 
-**How to view interface info from control hosts**
-- Tested on CC13.0.2 pre-release 341
+# How to view interface info from control hosts
+**Tested on CC13.0.2 pre-release 341**
 
-# On jumphost, connect as contrail user
+## On jumphost, connect as contrail user
+```bash
 [root@r4-ru43 ~]# su contrail
 [contrail@r4-ru43 root]$
+```
 
-# SSH to undercloud VM
+## SSH to undercloud VM
+```bash
 [contrail@r4-ru43 root]$ ssh undercloud
 Last login: Tue Nov 20 06:17:00 2018 from 192.168.122.1
 [stack@undercloud ~]$
+```
 
-# Source the stackrc file
+## Source the stackrc file
+```bash
 [stack@undercloud ~]$ . stackrc
 (undercloud) [stack@undercloud ~]$
+```
 
-# Display the BMS list
+## Display the BMS list
 ```bash
 (undercloud) [stack@undercloud ~]$ openstack baremetal node list
 +--------------------------------------+---------------------------------------+--------------------------------------+-------------+--------------------+-------------+
@@ -179,7 +213,7 @@ Last login: Tue Nov 20 06:17:00 2018 from 192.168.122.1
 +--------------------------------------+---------------------------------------+--------------------------------------+-------------+--------------------+-------------+
 ```
 
-# Grab interface list from control host
+## Grab interface list from control host
 ```bash
 (undercloud) [stack@undercloud ~]$ openstack baremetal introspection interface list r4u42-control
 +-----------+-------------------+----------------------------+-------------------+----------------+
@@ -192,7 +226,7 @@ Last login: Tue Nov 20 06:17:00 2018 from 192.168.122.1
 +-----------+-------------------+----------------------------+-------------------+----------------+
 ```
 
-# Show specific interface on control host
+## Show specific interface on control host
 ```bash
 (undercloud) [stack@undercloud ~]$ openstack baremetal introspection interface show r4u42-control ens2f0
 +--------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -208,12 +242,12 @@ Last login: Tue Nov 20 06:17:00 2018 from 192.168.122.1
 (Output was truncated)
 ---
 
-**How to check DPDK interface status**
-- Tested on CC13.0.2 pre-release 341
+# How to check DPDK interface status
+**Tested on CC13.0.2 pre-release 341**
 
 _Steps ommitted, connect to jumphost, then undercloud, then DPDK node, then DPDK agent container_
 
-# Display DPDK status
+## Display DPDK status
 ```bash
 (vrouter-agent-dpdk)[root@overcloudbnw-compdpdk-0 /]$ /opt/contrail/bin/dpdk_nic_bind.py --status
 
